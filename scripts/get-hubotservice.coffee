@@ -2,7 +2,7 @@
 #   Gets the status of a service on the Hubot server
 #
 # Commands:
-#   hubot get service <service name> - Finds the status of a service on the Hubot server
+#   hubot get service <name> - Finds the status of a service on the Hubot server
 
 # Require the edge module we installed
 edge = require("edge")
@@ -19,7 +19,8 @@ executePowerShell = edge.func('ps', -> ###
 )
 
 module.exports = (robot) ->
-  # Capture the user message using a regex capture to find the name of the service
+  # Capture the user message using a regex capture
+  # to find the name of the service
   robot.respond /get service (.*)$/i, (msg) ->
     # Set the service name to a varaible
     serviceName = msg.match[1]
@@ -37,20 +38,27 @@ module.exports = (robot) ->
           msg.send ":fire: An error was thrown in Node.js/CoffeeScript"
           msg.send error
         else
-          # Capture the PowerShell outpout and convert the JSON that the function returned into a CoffeeScript object
+          # Capture the PowerShell outpout and convert the
+          # JSON that the function returned into a CoffeeScript object
           result = JSON.parse result[0]
 
-          # Output the results into the Hubot log file so we can see what happened - useful for troubleshooting
+          # Output the results into the Hubot log file so
+          # we can see what happened - useful for troubleshooting
           console.log result
 
-          # Check in our object if the command was a success (checks the JSON returned from PowerShell)
-          # If there is a success, prepend a check mark emoji to the output from PowerShell.
+          # Check in our object if the command was a success
+          # (checks the JSON returned from PowerShell)
+          # If there is a success, prepend a check mark emoji
+          # to the output from PowerShell.
           if result.success is true
-            # Build a string to send back to the channel and include the output (this comes from the JSON output)
+            # Build a string to send back to the channel and
+            # include the output (this comes from the JSON output)
             msg.send ":white_check_mark: #{result.output}"
-          # If there is a failure, prepend a warning emoji to the output from PowerShell.
+          # If there is a failure, prepend a warning emoji to
+          # the output from PowerShell.
           else
-            # Build a string to send back to the channel and include the output (this comes from the JSON output)
+            # Build a string to send back to the channel and
+            #include the output (this comes from the JSON output)
             msg.send ":warning: #{result.output}"
 
     # Call PowerShell function
