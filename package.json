@@ -1,11 +1,14 @@
 {
   "name": "WindowsHubot",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "private": true,
   "author": "Firstname Lastname <my_name@hubot.lah>",
   "description": "A Windows Hubot",
   "dependencies": {
+    "edge": "^5.0.0",
+    "edge-ps": "0.1.0-pre",
     "hubot": "^2.19.0",
+    "hubot-auth": "^1.2.0",
     "hubot-diagnostics": "0.0.1",
     "hubot-help": "^0.2.0",
     "hubot-maps": "0.0.2",
@@ -19,6 +22,6 @@
     "node": "0.10.x"
   },
   "scripts": {
-	   "start": "node .\\node_modules\\coffee-script\\bin\\coffee .\\node_modules\\hubot\\bin\\hubot"
+    "start": "node .\\node_modules\\coffee-script\\bin\\coffee .\\node_modules\\hubot\\bin\\hubot"
   }
 }
