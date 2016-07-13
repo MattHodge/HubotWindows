@@ -7,7 +7,10 @@
 # Require the edge module we installed
 edge = require("edge")
 
-powershellScript = 'Get-ProcessHubot.ps1'
+# Set Variables
+exports = this
+exports.psScript = 'Get-ProcessHubot.ps1'
+exports.psScriptPath = '.\scripts'
 
 # Build the PowerShell that will execute
 executePowerShell = edge.func('ps', -> ###
@@ -20,6 +23,8 @@ executePowerShell = edge.func('ps', -> ###
   $splat = @{
     Name = $inputFromJS.processName
   }
+
+  # $scriptPath = Join-Path $inputFromJS.psScriptPath $inputFromJS.psScript
 
   Invoke-HubotPowerShell -FilePath .\scripts\Get-ProcessHubot.ps1 -Splat $splat
 ###
@@ -35,6 +40,8 @@ module.exports = (robot) ->
     # Build an object to send to PowerShell
     psObject = {
       processName: processName
+      psScript: exports.psScript
+      psScriptPath: exports.psScriptPath
     }
 
     # Build the PowerShell callback
@@ -61,7 +68,32 @@ module.exports = (robot) ->
             msgColor = '7CD197' #green
             # Build a string to send back to the channel and
             # include the output (this comes from the JSON output)
-            msg.send "```#{result.output}```"
+            # msg.send "```#{result.output}```"
+            
+            msgData = {
+              channel: msg.message.room
+              text: ":white_check_mark: Success callinng `#{exports.psScript}`"
+              attachments: [
+                {
+                  color: msgColor
+                  fallback: result.output
+                  mrkdwn_in: [
+                    "fields"
+                  ]
+                  fields: [
+                    {
+                      title: 'Processes'
+                      value: "```#{result.output}```"
+                    }
+                  ]
+                }
+              ]
+            }
+
+            console.log JSON.stringify(msgData)
+
+            robot.adapter.customMessage msgData
+
           # If there is a failure, prepend a warning emoji to
           # the output from PowerShell.
           else
@@ -79,13 +111,13 @@ module.exports = (robot) ->
                 capitalizedKey = key[0].toUpperCase() + key[1..-1].toLowerCase()
                 hash['title'] = capitalizedKey
                 hash['value'] = value
-                console.log "addinng #{key} and #{value} to fields"
+                console.log "adding #{key} and #{value} to fields"
                 fieldArray.push hash
 
               robot.emit 'slack-attachment',
                             channel: msg.message.room
                             fallback: result.error.message
-                            text: "Error when calling `#{powershellScript}`"
+                            text: ":fire: Error when calling `#{exports.psScript}`"
                             content:
                               color: msgColor
                               fields: fieldArray
