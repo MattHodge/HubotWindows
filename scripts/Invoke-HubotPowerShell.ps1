@@ -29,7 +29,23 @@ function Invoke-HubotPowerShell
 
         # Splat of the paramaters to pass to the script
         [Parameter(Mandatory=$false)]
-        [System.Collections.Hashtable]$Splat
+        [System.Collections.Hashtable]
+        $Splat,
+
+        # ComputerName if running the command remotely over WinRM
+        [Parameter(Mandatory=$false)]
+        [string]
+        $ComputerName,
+
+        # Port if running the command remotely over WinRM
+        [Parameter(Mandatory=$false)]
+        [int]
+        $Port = 5985,
+
+        # Port if running the command remotely over WinRM
+        [Parameter(Mandatory=$false)]
+        [PSCredential]
+        $Credential
     )
 
     # Set the erroraction
@@ -42,11 +58,45 @@ function Invoke-HubotPowerShell
     # Use try/catch block            
     try
     {
-        $script = Get-Command $FilePath | Select-Object -ExpandProperty ScriptBlock
-       
-        # Use ErrorAction Stop to make sure we can catch any errors
-        $scriptOutput = .$script @splat
+        $newPSSessionSplat = @{}
+
+        if ($PSBoundParameters.ContainsKey('Port'))
+        {
+            $newPSSessionSplat.Port = $Port
+        }
+
+        if ($PSBoundParameters.ContainsKey('Credential'))
+        {
+            $newPSSessionSplat.Credential = $Credential
+        }
+
+        if ($PSBoundParameters.ContainsKey('ComputerName'))
+        {
+            $newPSSessionSplat.ComputerName = $ComputerName
+
+            # splat the new session params
+            $s = New-PSSession @newPSSessionSplat    
+        }
+
+        $paramObj = New-Object PSObject -Property @{
+            script = Get-Command $FilePath | Select-Object -ExpandProperty ScriptBlock
+            splat = $Splat
+        }
         
+        if ($PSBoundParameters.ContainsKey('ComputerName'))
+        {
+            $scriptOutput = Invoke-Command -Session $s -ArgumentList @($paramObj) -ErrorAction Stop -ScriptBlock {
+                $paramObj = $args[0]
+                $splat = $paramObj.splat
+                New-Item -Path Function:\Hubot-Function -Value $paramObj.script -Force | Out-Null
+                Hubot-Function @splat
+            }
+        }
+        else
+        {
+            $scriptOutput = .$paramObj.script @Splat
+        }
+                      
         # Create a string for sending back to slack. * and ` are used to make the output look nice in Slack. Details: http://bit.ly/MHSlackFormat
         $result.output = $scriptOutput
         $result.output = $result.output -creplace '(?m)^\s*\r?\n',''
@@ -74,7 +124,7 @@ function Invoke-HubotPowerShell
 
         if ($_.CategoryInfo.Category)
         {
-            $result.error.category = $_.CategoryInfo.Category
+            $result.error.category = $_.CategoryInfo.Category.ToString()
         }
 
         if ($_.CategoryInfo.Activity)

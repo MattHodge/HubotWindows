@@ -20,13 +20,25 @@ executePowerShell = edge.func('ps', -> ###
   # Edge.js passes an object to PowerShell as a variable - $inputFromJS
 
   # Create a hashtable to pass to Invoke-HubotPowerShell
-  $splat = @{
-    Name = $inputFromJS.processName
+  # $splat =
+
+  $invokeSplat = @{
+    FilePath = '.\scripts\Get-ProcessHubot.ps1'
+    Splat = @{
+      Name = $inputFromJS.processName
+    }
+  }
+
+  if (-not([string]::IsNullOrEmpty($inputFromJS.ComputerName)))
+  {
+      $invokeSplat.ComputerName = $inputFromJS.ComputerName
+      $invokeSplat.Credential = Import-Clixml F:\ProjectsGit\HubotWindows\scripts\vagrantcreds.xml
+      $invokeSplat.Port = 55985
   }
 
   # $scriptPath = Join-Path $inputFromJS.psScriptPath $inputFromJS.psScript
 
-  Invoke-HubotPowerShell -FilePath .\scripts\Get-ProcessHubot.ps1 -Splat $splat
+  Invoke-HubotPowerShell @invokeSplat
 ###
 )
 
@@ -34,14 +46,22 @@ module.exports = (robot) ->
   # Capture the user message using a regex capture
   # to find the name of the service
   robot.respond /get proc (.*)$/i, (msg) ->
-    # Set the service name to a varaible
-    processName = msg.match[1]
+    console.log msg.match
+    # split the message to check if the user passed a server name
+    splitMsg = msg.match[1].split " "
+    processName = splitMsg[0]
+    console.log "processName - #{processName}"
+
+    if splitMsg[1]
+      computerName = splitMsg[1]
+      console.log "computerName - #{computerName}"
 
     # Build an object to send to PowerShell
     psObject = {
       processName: processName
       psScript: exports.psScript
       psScriptPath: exports.psScriptPath
+      computerName: computerName
     }
 
     # Build the PowerShell callback
@@ -69,10 +89,13 @@ module.exports = (robot) ->
             # Build a string to send back to the channel and
             # include the output (this comes from the JSON output)
             # msg.send "```#{result.output}```"
-            
+
+            textString = ":white_check_mark: Success calling `#{exports.psScript}`"
+            if computerName
+              textString += " against machine `#{computerName}`"
             msgData = {
               channel: msg.message.room
-              text: ":white_check_mark: Success callinng `#{exports.psScript}`"
+              text: textString
               attachments: [
                 {
                   color: msgColor
@@ -114,10 +137,14 @@ module.exports = (robot) ->
                 console.log "adding #{key} and #{value} to fields"
                 fieldArray.push hash
 
+              textString = ":fire: Error when calling `#{exports.psScript}`"
+              if computerName
+                textString += " against machine `#{computerName}`"
+
               robot.emit 'slack-attachment',
                             channel: msg.message.room
                             fallback: result.error.message
-                            text: ":fire: Error when calling `#{exports.psScript}`"
+                            text: textString
                             content:
                               color: msgColor
                               fields: fieldArray
