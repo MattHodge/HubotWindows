@@ -1,0 +1,5 @@
+{
+  "verbose": true,
+  "watch": ["*.coffee","*.js"],
+  "ignore": ["*.test.js", "fixtures/*", "brain-dump.json"]
+}

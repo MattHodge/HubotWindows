@@ -6,7 +6,7 @@
     $Name,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet("Restart", "Stop", "Start")]
+    [ValidateSet("Restart", "Stop", "Start", "Get")]
     [string]
     $Action
 )
@@ -18,15 +18,19 @@ if (Get-Service -Name $Name -ErrorAction SilentlyContinue)
     {
         Restart {
             Restart-Service -Name $Name -Force -ErrorAction Stop
-            $cmdResult = "Succesfully restarted service '$($name)'"
+            $cmdResult = "Successfully restarted service '$($name)'"
         }
         Stop {
             Stop-Service -Name $Name -Force -ErrorAction Stop
-            $cmdResult = "Succesfully stopped service '$($name)'"
+            $cmdResult = "Successfully stopped service '$($name)'"
         }
         Start {
             Start-Service -Name $Name -ErrorAction Stop
-            $cmdResult = "Succesfully started service '$($name)'"
+            $cmdResult = "Successfully started service '$($name)'"
+        }
+        Get {
+          $output = Get-Service -Name $Name -ErrorAction Stop
+          $cmdResult = "Service '$($name)' ($($output.DisplayName)) is currently $($output.Status)"
         }
     }
 }
