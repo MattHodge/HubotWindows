@@ -11,7 +11,7 @@ try
 }
 catch
 {
-    $cmdResult = "No process found with name ``$($name)``"
+    $cmdResult = "No process found with name '$($name)'"
 }
 
 return $cmdResult | Out-String
