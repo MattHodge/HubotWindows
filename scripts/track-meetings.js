@@ -13,8 +13,8 @@
 //   meeting add <type> <length_in_minutes> - adds a meeting with a type and a length of time
 
 var sqlite3      = require('sqlite3').verbose()
-  , db           = new sqlite3.Database('meetings.db')
   , Conversation = require('hubot-conversation')
+  , db           = new sqlite3.Database('meetings.db')
   ;
 
 // define the meeting categories
