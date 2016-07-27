@@ -114,14 +114,10 @@ module.exports = robot => {
   robot.respond(/meeting add\s(.*)\s(.*)/i, msg => {
     nameToRecord = getNameToRecord(msg);
 
-    // check if meeting is valid type
-    var meetingType = testMeetingType(msg, arrayOfMeetingTypes, msg.match[1]) ? msg.match[1] : false;
+    var meetingDuration = parseMeetingDuration(msg, msg.match[2]);
+    var meetingType     = testMeetingType(msg, arrayOfMeetingTypes, msg.match[1]) ? msg.match[1] : false;
 
-    if (!meetingType) return;
-
-    // check if meeting duration is valid
-
-    if (!meetingDuration) return;
+    if (!meetingDuration || !meetingType) return;
 
     insertRecordIntoDB(msg, nameToRecord, meetingType, meetingDuration);
   });
