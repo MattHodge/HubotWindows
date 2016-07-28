@@ -15,7 +15,6 @@
 
 var sqlite3 = require('sqlite3').verbose();
 var Conversation = require('hubot-conversation');
-var db = new sqlite3.Database('meetings.db');
 
 // define the meeting categories
 var meetingCategories = [{
@@ -54,6 +53,8 @@ function getNameToRecord(msg) {
 }
 
 function insertRecordIntoDB(msg, nameToRecord, meetingType, meetingDuration) {
+  var db = new sqlite3.Database('meetings.db');
+
   db.serialize(() => {
     db.run('CREATE TABLE IF NOT EXISTS meetings (timestamp INTEGER, user TEXT, ' +
       'type TEXT, duration INTEGER)');
@@ -134,7 +135,17 @@ module.exports = robot => {
     // Start of meetingString
     msg.reply('Sure, what kind of meeting was it? ' + meetingList);
 
-    dialog.addChoice(/\s(\w{2})/, msg2 => {
+    var msgRegex = /(.*)/;
+
+    /*
+      if user is sending a private message, use a different regex capture that doens't include
+      the username of the bot in the message
+    */
+    if (msg.message.user.name === msg.message.user.room) {
+      msgRegex = /\s(\w{2})/i;
+    }
+
+    dialog.addChoice(msgRegex, msg2 => {
       var meetingType = testMeetingType(msg, arrayOfMeetingTypes, msg2.match[1]) ? msg2.match[1] : false;
 
       if (!meetingType) return;
