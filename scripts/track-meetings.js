@@ -15,6 +15,11 @@
 
 var sqlite3 = require('sqlite3').verbose();
 var Conversation = require('hubot-conversation');
+var logstashRedis = require('logstash-redis');
+
+var baseObject = {
+  env: 'development'
+};
 
 // define the meeting categories
 var meetingCategories = [{
@@ -53,6 +58,22 @@ function getNameToRecord(msg) {
 }
 
 function insertRecordIntoDB(msg, nameToRecord, meetingType, meetingDuration) {
+
+  var logger = logstashRedis.createLogger('127.0.0.1', 6379, 'key', baseObject);
+
+  logger.log({
+    '@timestamp': new Date(),
+    user: nameToRecord,
+    meeting_type: meetingType,
+    duration: meetingDuration,
+    type: 'redis'
+  });
+
+  logger.close();
+
+  msg.reply(`Saved \`${meetingDuration}\` minutes to your meeting time for today.`);
+
+  /*
   var db = new sqlite3.Database('meetings.db');
 
   db.serialize(() => {
@@ -74,6 +95,7 @@ function insertRecordIntoDB(msg, nameToRecord, meetingType, meetingDuration) {
   });
 
   db.close();
+  */
 }
 
 function parseMeetingDuration(msg, meetingDuration) {

@@ -5,8 +5,7 @@
   "author": "Firstname Lastname <my_name@hubot.lah>",
   "description": "A Windows Hubot",
   "dependencies": {
-    "edge": "^5.0.0",
-    "edge-ps": "0.1.0-pre",
+    "ascii-table": "0.0.9",
     "hubot": "^2.19.0",
     "hubot-auth": "=1.2.0",
     "hubot-conversation": "^1.1.1",
@@ -19,6 +18,8 @@
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "^3.4.2",
     "jobot-brain-file": "^1.0.1",
+    "logstash-redis": "^0.3.1",
+    "node-powershell": "^2.0.2",
     "sqlite3": "^3.1.4"
   },
   "engines": {

@@ -96,11 +96,20 @@ function Invoke-HubotPowerShell
         {
             $scriptOutput = .$paramObj.script @Splat
         }
-                      
-        # Create a string for sending back to slack. * and ` are used to make the output look nice in Slack. Details: http://bit.ly/MHSlackFormat
-        $result.output = $scriptOutput
-        $result.output = $result.output -creplace '(?m)^\s*\r?\n',''
         
+        # If the output is an object, convert it to json
+        if ($scriptOutput.GetType().FullName -eq 'System.Object[]')
+        {
+            $result.output = $scriptOutput | ConvertTo-Json
+            $result.result_is_json = $true
+        }
+        # otherwise leave as a string
+        else
+        {
+            $result.output = $scriptOutput
+            $result.result_is_json = $false
+        }
+                      
         # Set a successful result
         $result.success = $true
     }

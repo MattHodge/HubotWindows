@@ -7,11 +7,11 @@
 
 try
 {
-    $cmdResult = Get-Process -Name $name -ErrorAction Stop
+    $cmdResult = Get-Process -Name $name -ErrorAction Stop | Select-Object id,processname,cpu,handles
 }
 catch
 {
     $cmdResult = "No process found with name '$($name)'"
 }
 
-return $cmdResult | Out-String
+return $cmdResult
