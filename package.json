@@ -22,6 +22,6 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "node .\\node_modules\\coffee-script\\bin\\coffee .\\node_modules\\hubot\\bin\\hubot"
+    "start": ".\\bin\\hubot.cmd"
   }
 }
